@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PC Mall | Cart</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/products}">PC Mall</a>
+    <nav class="nav-links" aria-label="Main navigation">
+        <a class="nav-link" th:href="@{/products}">Products</a>
+        <a class="cart-link active" th:href="@{/cart}">
+            Cart
+            <span class="cart-count" th:text="${cartSummary.totalQuantity}">0</span>
+        </a>
+    </nav>
+</header>
+
+<main>
+    <section class="cart-heading" aria-labelledby="cart-title">
+        <div>
+            <p class="eyebrow">Session cart</p>
+            <h1 id="cart-title">Review your build list.</h1>
+            <p class="intro-copy">Cart contents are kept in the current browser session while product details come from mock backend data.</p>
+        </div>
+        <a class="secondary-action" th:href="@{/products}">Continue shopping</a>
+    </section>
+
+    <section class="feedback" aria-live="polite" th:if="${notice != null || error != null}">
+        <p class="notice" th:if="${notice != null}" th:text="${notice}">Cart updated.</p>
+        <p class="error" th:if="${error != null}" th:text="${error}">Something went wrong.</p>
+    </section>
+
+    <section class="empty-state" th:if="${cart.empty()}">
+        <h2>Your cart is empty.</h2>
+        <p>Start with a laptop, display, or desk essential.</p>
+        <a class="primary-link" th:href="@{/products}">Browse products</a>
+    </section>
+
+    <section class="cart-layout" th:unless="${cart.empty()}">
+        <div class="cart-lines" aria-label="Cart items">
+            <article class="cart-line reveal" th:each="line : ${cart.lines}">
+                <img th:src="${line.product.imageUrl}" th:alt="${line.product.name}" loading="lazy">
+                <div class="line-copy">
+                    <span class="line-brand" th:text="${line.product.brand}">Brand</span>
+                    <h2 th:text="${line.product.name}">Product name</h2>
+                    <p th:text="${line.product.category}">Category</p>
+                </div>
+                <div class="line-price">
+                    <span>Unit</span>
+                    <strong th:text="'¥' + ${#numbers.formatDecimal(line.product.price, 1, 'COMMA', 2, 'POINT')}">¥0.00</strong>
+                </div>
+                <form class="quantity-form" th:action="@{/cart/items/update}" method="post">
+                    <input type="hidden" name="productId" th:value="${line.product.id}">
+                    <label>
+                        Qty
+                        <input type="number" name="quantity" min="1" th:max="${line.product.stock}" th:value="${line.quantity}">
+                    </label>
+                    <button type="submit">Update</button>
+                </form>
+                <div class="line-subtotal">
+                    <span>Subtotal</span>
+                    <strong th:text="'¥' + ${#numbers.formatDecimal(line.subtotal, 1, 'COMMA', 2, 'POINT')}">¥0.00</strong>
+                </div>
+                <form th:action="@{/cart/items/remove}" method="post">
+                    <input type="hidden" name="productId" th:value="${line.product.id}">
+                    <button class="ghost-button" type="submit">Remove</button>
+                </form>
+            </article>
+        </div>
+
+        <aside class="order-summary" aria-label="Order summary">
+            <p class="eyebrow">Summary</p>
+            <div class="summary-row">
+                <span>Items</span>
+                <strong th:text="${cart.totalQuantity}">0</strong>
+            </div>
+            <div class="summary-row total">
+                <span>Total</span>
+                <strong th:text="'¥' + ${#numbers.formatDecimal(cart.totalPrice, 1, 'COMMA', 2, 'POINT')}">¥0.00</strong>
+            </div>
+            <p class="summary-note">Checkout is intentionally out of scope for this mock phase.</p>
+            <form th:action="@{/cart/clear}" method="post">
+                <button class="clear-button" type="submit">Clear cart</button>
+            </form>
+        </aside>
+    </section>
+</main>
+</body>
+</html>
